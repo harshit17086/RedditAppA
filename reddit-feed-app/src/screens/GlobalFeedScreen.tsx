@@ -1,4 +1,4 @@
-import { View, Text, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -8,6 +8,7 @@ interface Post {
   title: string;
   description: string;
   tags: string[];
+  image_url?: string;
   created_at: string;
   user_id: string;
   users?: {
@@ -242,6 +243,22 @@ export default function GlobalFeedScreen() {
             <Text style={{ color: '#4a4a4a', marginBottom: 12, lineHeight: 20, fontSize: 15 }}>
               {item.description}
             </Text>
+
+            {/* Image Display */}
+            {item.image_url && (
+              <View style={{ marginBottom: 16 }}>
+                <Image 
+                  source={{ uri: item.image_url }} 
+                  style={{ 
+                    width: '100%', 
+                    height: 200, 
+                    borderRadius: 12,
+                    backgroundColor: '#f8f9fa',
+                  }}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
             
             {item.tags && item.tags.length > 0 && (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 }}>

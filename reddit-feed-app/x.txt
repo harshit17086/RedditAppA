@@ -13,7 +13,7 @@ create table public.posts (
   title text not null,
   description text,
   tags text[],
-  
+  image_url text,
   location text,
   created_at timestamp with time zone default timezone('utc'::text, now()),
   updated_at timestamp with time zone default timezone('utc'::text, now())
@@ -55,12 +55,27 @@ create policy "Users can manage their own interests"
   for all
   using (auth.uid() = user_id);
 
+-- Storage policies for image uploads
+-- Allow authenticated users to upload images
+create policy "Users can upload images"
+  on storage.objects
+  for insert
+  with check (auth.role() = 'authenticated' and bucket_id = 'post-images');
 
-  -- Already exists in your x.txt
-create table public.user_interests (
-  id uuid primary key default uuid_generate_v4(),
-  user_id uuid references public.users(id) on delete cascade,
-  tag text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  unique(user_id, tag)
-);
+-- Allow public read access to images
+create policy "Public read access to images"
+  on storage.objects
+  for select
+  using (bucket_id = 'post-images');
+
+-- Allow users to update their own uploaded images
+create policy "Users can update their images"
+  on storage.objects
+  for update
+  using (auth.role() = 'authenticated' and bucket_id = 'post-images');
+
+-- Allow users to delete their own uploaded images
+create policy "Users can delete their images"
+  on storage.objects
+  for delete
+  using (auth.role() = 'authenticated' and bucket_id = 'post-images');

@@ -1,12 +1,14 @@
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Image, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { pickImage, uploadImage } from '../utils/imageUpload';
 
 interface Post {
   id: string;
   title: string;
   description: string;
   tags: string[];
+  image_url?: string;
 }
 
 export default function CreatePostScreen() {
@@ -15,6 +17,15 @@ export default function CreatePostScreen() {
   const [tags, setTags] = useState('');
   const [loading, setLoading] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImagePick = async () => {
+    const imageUri = await pickImage();
+    if (imageUri) {
+      setSelectedImage(imageUri);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -28,6 +39,15 @@ export default function CreatePostScreen() {
       const user = userData.user;
       const tagArray = tags.split(',').map(t => t.trim()).filter(Boolean);
 
+      let imageUrl = null;
+      if (selectedImage && !editingPost?.image_url) {
+        setUploadingImage(true);
+        imageUrl = await uploadImage(selectedImage, 'post-image.jpg');
+        setUploadingImage(false);
+      } else if (editingPost?.image_url) {
+        imageUrl = editingPost.image_url;
+      }
+
       if (editingPost) {
         // Update existing post
         const { error } = await supabase
@@ -36,6 +56,7 @@ export default function CreatePostScreen() {
             title,
             description,
             tags: tagArray,
+            image_url: imageUrl,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingPost.id)
@@ -50,6 +71,7 @@ export default function CreatePostScreen() {
           title,
           description,
           tags: tagArray,
+          image_url: imageUrl,
         });
         if (error) throw error;
         Alert.alert('Success', 'Post created!');
@@ -59,6 +81,7 @@ export default function CreatePostScreen() {
       setTitle('');
       setDescription('');
       setTags('');
+      setSelectedImage(null);
       setEditingPost(null);
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to save post');
@@ -71,11 +94,16 @@ export default function CreatePostScreen() {
     setTitle('');
     setDescription('');
     setTags('');
+    setSelectedImage(null);
     setEditingPost(null);
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f8f9fa', padding: 20 }}>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: '#f8f9fa' }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={{ 
         backgroundColor: '#fff', 
         borderRadius: 20, 
@@ -154,6 +182,47 @@ export default function CreatePostScreen() {
           />
         </View>
 
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
+            Image (Optional)
+          </Text>
+          <TouchableOpacity
+            onPress={handleImagePick}
+            style={{
+              borderWidth: 2,
+              borderColor: '#e9ecef',
+              borderStyle: 'dashed',
+              borderRadius: 12,
+              padding: 20,
+              alignItems: 'center',
+              backgroundColor: '#f8f9fa',
+            }}
+          >
+            {selectedImage ? (
+              <View style={{ alignItems: 'center' }}>
+                <Image 
+                  source={{ uri: selectedImage }} 
+                  style={{ width: 200, height: 150, borderRadius: 8, marginBottom: 8 }}
+                  resizeMode="cover"
+                />
+                <Text style={{ color: '#FF4500', fontSize: 14, fontWeight: '500' }}>
+                  Tap to change image
+                </Text>
+              </View>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <Text style={{ fontSize: 48, marginBottom: 8 }}>📷</Text>
+                <Text style={{ color: '#6c757d', fontSize: 14, textAlign: 'center' }}>
+                  Tap to add an image
+                </Text>
+                <Text style={{ color: '#adb5bd', fontSize: 12, marginTop: 4 }}>
+                  JPG, PNG up to 5MB
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
         <View style={{ marginBottom: 24 }}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
             Tags
@@ -210,10 +279,10 @@ export default function CreatePostScreen() {
             <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
               {loading ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}
             </Text>
-            {loading && <ActivityIndicator style={{ marginLeft: 8 }} size="small" color="#fff" />}
+            {(loading || uploadingImage) && <ActivityIndicator style={{ marginLeft: 8 }} size="small" color="#fff" />}
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
