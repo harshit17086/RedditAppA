@@ -44,7 +44,7 @@ export default function App() {
           console.log('New user profile created successfully');
         }
       } else {
-        // Update existing user profile if needed
+        //if needed
         const { error: updateError } = await supabase
           .from('users')
           .update({
