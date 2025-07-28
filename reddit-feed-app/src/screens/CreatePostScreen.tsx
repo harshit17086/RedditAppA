@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Image, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Image, ScrollView, Animated } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { pickImage, uploadImage } from '../utils/imageUpload';
@@ -19,6 +19,24 @@ export default function CreatePostScreen() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [slideAnim] = useState(new Animated.Value(30));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleImagePick = async () => {
     const imageUri = await pickImage();
@@ -104,42 +122,70 @@ export default function CreatePostScreen() {
       contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ 
-        backgroundColor: '#fff', 
-        borderRadius: 20, 
-        padding: 24, 
-        width: '100%', 
-        maxWidth: 500,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      }}>
-        <View style={{ alignItems: 'center', marginBottom: 24 }}>
-          <View style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: '#FF4500',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 16,
-          }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 24 }}>
+      <Animated.View 
+        style={{ 
+          backgroundColor: '#fff', 
+          borderRadius: 24, 
+          padding: 32, 
+          width: '100%', 
+          maxWidth: 500,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.15,
+          shadowRadius: 16,
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        }}
+      >
+        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+          <Animated.View 
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: '#6BCF7F',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 24,
+              elevation: 6,
+              shadowColor: '#6BCF7F',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 32 }}>
               {editingPost ? '✏️' : '📝'}
             </Text>
-          </View>
-          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FF4500', marginBottom: 4 }}>
+          </Animated.View>
+          <Text style={{ 
+            fontSize: 28, 
+            fontWeight: 'bold', 
+            color: '#6BCF7F', 
+            marginBottom: 8,
+            textAlign: 'center',
+          }}>
             {editingPost ? 'Edit Post' : 'Create a Post'}
           </Text>
-          <Text style={{ fontSize: 14, color: '#6c757d', textAlign: 'center' }}>
+          <Text style={{ 
+            fontSize: 16, 
+            color: '#6c757d', 
+            textAlign: 'center',
+            lineHeight: 22,
+          }}>
             {editingPost ? 'Update your post content below' : 'Share your thoughts with the community'}
           </Text>
         </View>
 
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: '#1a1a1a', 
+            marginBottom: 12,
+            letterSpacing: 0.5,
+          }}>
             Title *
           </Text>
           <TextInput
@@ -149,17 +195,24 @@ export default function CreatePostScreen() {
             style={{ 
               borderWidth: 2, 
               borderColor: '#e9ecef', 
-              borderRadius: 12, 
-              padding: 16, 
+              borderRadius: 16, 
+              padding: 18, 
               fontSize: 16,
               backgroundColor: '#f8f9fa',
+              fontWeight: '500',
             }}
             placeholderTextColor="#adb5bd"
           />
         </View>
 
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: '#1a1a1a', 
+            marginBottom: 12,
+            letterSpacing: 0.5,
+          }}>
             Description
           </Text>
           <TextInput
@@ -171,19 +224,26 @@ export default function CreatePostScreen() {
             style={{ 
               borderWidth: 2, 
               borderColor: '#e9ecef', 
-              borderRadius: 12, 
-              padding: 16, 
+              borderRadius: 16, 
+              padding: 18, 
               fontSize: 16, 
-              minHeight: 100,
+              minHeight: 120,
               backgroundColor: '#f8f9fa',
               textAlignVertical: 'top',
+              fontWeight: '500',
             }}
             placeholderTextColor="#adb5bd"
           />
         </View>
 
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: '#1a1a1a', 
+            marginBottom: 12,
+            letterSpacing: 0.5,
+          }}>
             Image (Optional)
           </Text>
           <TouchableOpacity
@@ -192,30 +252,67 @@ export default function CreatePostScreen() {
               borderWidth: 2,
               borderColor: '#e9ecef',
               borderStyle: 'dashed',
-              borderRadius: 12,
-              padding: 20,
+              borderRadius: 16,
+              padding: 24,
               alignItems: 'center',
               backgroundColor: '#f8f9fa',
+              elevation: 2,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
             }}
+            activeOpacity={0.8}
           >
             {selectedImage ? (
               <View style={{ alignItems: 'center' }}>
                 <Image 
                   source={{ uri: selectedImage }} 
-                  style={{ width: 200, height: 150, borderRadius: 8, marginBottom: 8 }}
+                  style={{ 
+                    width: 240, 
+                    height: 180, 
+                    borderRadius: 12, 
+                    marginBottom: 12,
+                    backgroundColor: '#f8f9fa',
+                  }}
                   resizeMode="cover"
                 />
-                <Text style={{ color: '#FF4500', fontSize: 14, fontWeight: '500' }}>
+                <Text style={{ 
+                  color: '#6BCF7F', 
+                  fontSize: 16, 
+                  fontWeight: '600',
+                  letterSpacing: 0.5,
+                }}>
                   Tap to change image
                 </Text>
               </View>
             ) : (
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ fontSize: 48, marginBottom: 8 }}>📷</Text>
-                <Text style={{ color: '#6c757d', fontSize: 14, textAlign: 'center' }}>
+                <View style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: '#e9ecef',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}>
+                  <Text style={{ fontSize: 40 }}>📷</Text>
+                </View>
+                <Text style={{ 
+                  color: '#6c757d', 
+                  fontSize: 16, 
+                  textAlign: 'center',
+                  fontWeight: '500',
+                  marginBottom: 4,
+                }}>
                   Tap to add an image
                 </Text>
-                <Text style={{ color: '#adb5bd', fontSize: 12, marginTop: 4 }}>
+                <Text style={{ 
+                  color: '#adb5bd', 
+                  fontSize: 14,
+                  textAlign: 'center',
+                }}>
                   JPG, PNG up to 5MB
                 </Text>
               </View>
@@ -223,8 +320,14 @@ export default function CreatePostScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 8 }}>
+        <View style={{ marginBottom: 32 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: '#1a1a1a', 
+            marginBottom: 12,
+            letterSpacing: 0.5,
+          }}>
             Tags
           </Text>
           <TextInput
@@ -234,55 +337,89 @@ export default function CreatePostScreen() {
             style={{ 
               borderWidth: 2, 
               borderColor: '#e9ecef', 
-              borderRadius: 12, 
-              padding: 16, 
+              borderRadius: 16, 
+              padding: 18, 
               fontSize: 16,
               backgroundColor: '#f8f9fa',
+              fontWeight: '500',
             }}
             placeholderTextColor="#adb5bd"
           />
-          <Text style={{ fontSize: 12, color: '#6c757d', marginTop: 4 }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: '#6c757d', 
+            marginTop: 8,
+            lineHeight: 20,
+          }}>
             Add relevant tags to help others discover your post
           </Text>
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ flexDirection: 'row', gap: 16 }}>
           {editingPost && (
             <TouchableOpacity
               style={{ 
                 flex: 1, 
                 backgroundColor: '#6c757d', 
-                borderRadius: 12, 
-                paddingVertical: 16, 
+                borderRadius: 16, 
+                paddingVertical: 18, 
                 alignItems: 'center',
-                elevation: 2,
+                elevation: 4,
+                shadowColor: '#6c757d',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
               }}
               onPress={handleCancel}
               disabled={loading}
+              activeOpacity={0.8}
             >
-              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>Cancel</Text>
+              <Text style={{ 
+                color: '#fff', 
+                fontWeight: '700', 
+                fontSize: 16,
+                letterSpacing: 0.5,
+              }}>
+                Cancel
+              </Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
             style={{ 
               flex: editingPost ? 1 : 1, 
-              backgroundColor: '#FF4500', 
-              borderRadius: 12, 
-              paddingVertical: 16, 
+              backgroundColor: '#6BCF7F', 
+              borderRadius: 16, 
+              paddingVertical: 18, 
               alignItems: 'center', 
               opacity: loading ? 0.7 : 1,
-              elevation: 2,
+              elevation: 6,
+              shadowColor: '#6BCF7F',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
             }}
             onPress={handleSubmit}
             disabled={loading}
+            activeOpacity={0.8}
           >
-            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
+            <Text style={{ 
+              color: '#fff', 
+              fontWeight: '700', 
+              fontSize: 16,
+              letterSpacing: 0.5,
+            }}>
               {loading ? 'Saving...' : (editingPost ? 'Update Post' : 'Create Post')}
             </Text>
-            {(loading || uploadingImage) && <ActivityIndicator style={{ marginLeft: 8 }} size="small" color="#fff" />}
+            {(loading || uploadingImage) && (
+              <ActivityIndicator 
+                style={{ marginLeft: 12 }} 
+                size="small" 
+                color="#fff" 
+              />
+            )}
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
     </ScrollView>
   );
 }

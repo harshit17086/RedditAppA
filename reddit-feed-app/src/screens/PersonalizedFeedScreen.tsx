@@ -1,4 +1,4 @@
-import { View, Text, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView, TextInput, Image, Animated } from 'react-native';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -31,8 +31,15 @@ export default function PersonalizedFeedScreen() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showAddInterest, setShowAddInterest] = useState(false);
   const [newInterest, setNewInterest] = useState('');
+  const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
     // Get current user
     supabase.auth.getUser().then(({ data: { user } }) => {
       setCurrentUser(user);
@@ -181,45 +188,65 @@ export default function PersonalizedFeedScreen() {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#f8f9fa', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FF4500" />
-        <Text style={{ marginTop: 16, color: '#6c757d', fontSize: 16 }}>Loading personalized posts...</Text>
+        <ActivityIndicator size="large" color="#FFD93D" />
+        <Text style={{ marginTop: 16, color: '#6c757d', fontSize: 16, fontWeight: '500' }}>
+          Loading personalized posts...
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+    <Animated.View style={{ flex: 1, backgroundColor: '#f8f9fa', opacity: fadeAnim }}>
       {/* Interest Tags Filter */}
       <View style={{ 
         backgroundColor: '#fff', 
-        paddingHorizontal: 16, 
-        paddingVertical: 12,
+        paddingHorizontal: 20, 
+        paddingVertical: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#e9ecef',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
       }}>
-        <Text style={{ fontSize: 16, fontWeight: '600', color: '#1a1a1a', marginBottom: 12 }}>
+        <Text style={{ 
+          fontSize: 18, 
+          fontWeight: '700', 
+          color: '#1a1a1a', 
+          marginBottom: 16,
+          letterSpacing: 0.5,
+        }}>
           Your Interests
         </Text>
         
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
           {userInterests.map((interest) => (
             <TouchableOpacity
               key={interest.id}
               style={{
-                backgroundColor: selectedTags.includes(interest.tag) ? '#FF4500' : '#FFF3E0',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
-                marginRight: 8,
-                borderWidth: 1,
-                borderColor: selectedTags.includes(interest.tag) ? '#FF4500' : '#FFE0B2',
+                backgroundColor: selectedTags.includes(interest.tag) ? '#FFD93D' : '#FFF8E1',
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 20,
+                marginRight: 12,
+                borderWidth: 2,
+                borderColor: selectedTags.includes(interest.tag) ? '#FFD93D' : '#FFE082',
+                elevation: selectedTags.includes(interest.tag) ? 4 : 2,
+                shadowColor: selectedTags.includes(interest.tag) ? '#FFD93D' : '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: selectedTags.includes(interest.tag) ? 0.3 : 0.1,
+                shadowRadius: 4,
               }}
               onPress={() => toggleTagFilter(interest.tag)}
+              activeOpacity={0.8}
             >
               <Text style={{ 
-                color: selectedTags.includes(interest.tag) ? '#fff' : '#FF4500', 
-                fontSize: 12, 
-                fontWeight: '500' 
+                color: selectedTags.includes(interest.tag) ? '#fff' : '#FF8F00', 
+                fontSize: 14, 
+                fontWeight: '600',
+                letterSpacing: 0.5,
               }}>
                 #{interest.tag}
               </Text>
@@ -228,56 +255,86 @@ export default function PersonalizedFeedScreen() {
           
           <TouchableOpacity
             style={{
-              backgroundColor: '#FFF3E0',
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: '#FFE0B2',
+              backgroundColor: '#FFF8E1',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 20,
+              borderWidth: 2,
+              borderColor: '#FFE082',
+              elevation: 2,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
             }}
             onPress={() => setShowAddInterest(true)}
+            activeOpacity={0.8}
           >
-            <Text style={{ color: '#FF4500', fontSize: 12, fontWeight: '500' }}>+ Add</Text>
+            <Text style={{ 
+              color: '#FF8F00', 
+              fontSize: 14, 
+              fontWeight: '600',
+              letterSpacing: 0.5,
+            }}>
+              + Add Interest
+            </Text>
           </TouchableOpacity>
         </ScrollView>
 
         {showAddInterest && (
-          <View style={{ 
-            backgroundColor: '#FFF3E0', 
-            padding: 12, 
-            borderRadius: 8, 
-            marginTop: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
+          <Animated.View 
+            style={{ 
+              backgroundColor: '#FFF8E1', 
+              padding: 16, 
+              borderRadius: 16, 
+              marginTop: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              elevation: 4,
+              shadowColor: '#FFD93D',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+            }}
+          >
             <TextInput
               placeholder="Enter tag name..."
               value={newInterest}
               onChangeText={setNewInterest}
               style={{
                 flex: 1,
-                borderWidth: 1,
-                borderColor: '#FFE0B2',
-                borderRadius: 6,
-                padding: 8,
-                fontSize: 14,
+                borderWidth: 2,
+                borderColor: '#FFE082',
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 16,
                 backgroundColor: '#fff',
+                fontWeight: '500',
               }}
               onSubmitEditing={() => addUserInterest(newInterest)}
+              placeholderTextColor="#adb5bd"
             />
             <TouchableOpacity
-              style={{ marginLeft: 8, padding: 8 }}
+              style={{ 
+                marginLeft: 12, 
+                padding: 12,
+                backgroundColor: '#FFD93D',
+                borderRadius: 12,
+                elevation: 2,
+              }}
               onPress={() => addUserInterest(newInterest)}
+              activeOpacity={0.8}
             >
-              <Text style={{ color: '#FF4500', fontWeight: '600' }}>Add</Text>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Add</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={{ marginLeft: 8, padding: 8 }}
+              style={{ marginLeft: 8, padding: 12 }}
               onPress={() => setShowAddInterest(false)}
+              activeOpacity={0.8}
             >
-              <Text style={{ color: '#6c757d' }}>Cancel</Text>
+              <Text style={{ color: '#6c757d', fontWeight: '600', fontSize: 14 }}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         )}
       </View>
 
@@ -285,53 +342,85 @@ export default function PersonalizedFeedScreen() {
         data={posts}
         keyExtractor={item => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FF4500']} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FFD93D']} />
         }
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <View style={{ 
-            backgroundColor: '#fff', 
-            borderRadius: 16, 
-            padding: 20, 
-            marginBottom: 16, 
-            elevation: 2,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-          }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1a1a', flex: 1, lineHeight: 26 }}>
+        contentContainerStyle={{ padding: 20 }}
+        renderItem={({ item, index }) => (
+          <Animated.View 
+            style={{ 
+              backgroundColor: '#fff', 
+              borderRadius: 20, 
+              padding: 24, 
+              marginBottom: 20, 
+              elevation: 6,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              opacity: fadeAnim,
+              transform: [{ 
+                translateY: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0],
+                })
+              }],
+            }}
+          >
+            <View style={{ 
+              flexDirection: 'row', 
+              justifyContent: 'space-between', 
+              alignItems: 'flex-start', 
+              marginBottom: 16 
+            }}>
+              <Text style={{ 
+                fontSize: 22, 
+                fontWeight: 'bold', 
+                color: '#1a1a1a', 
+                flex: 1, 
+                lineHeight: 28,
+                letterSpacing: 0.5,
+              }}>
                 {item.title}
               </Text>
               {currentUser && item.user_id === currentUser.id && (
                 <TouchableOpacity
                   style={{ 
-                    backgroundColor: '#FF4500', 
-                    paddingHorizontal: 12, 
-                    paddingVertical: 6, 
-                    borderRadius: 8,
-                    elevation: 1,
+                    backgroundColor: '#FFD93D', 
+                    paddingHorizontal: 16, 
+                    paddingVertical: 8, 
+                    borderRadius: 12,
+                    elevation: 3,
+                    shadowColor: '#FFD93D',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 4,
                   }}
+                  activeOpacity={0.8}
                 >
-                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Edit</Text>
+                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Edit</Text>
                 </TouchableOpacity>
               )}
             </View>
             
-            <Text style={{ color: '#4a4a4a', marginBottom: 12, lineHeight: 20, fontSize: 15 }}>
+            <Text style={{ 
+              color: '#4a4a4a', 
+              marginBottom: 16, 
+              lineHeight: 22, 
+              fontSize: 16,
+              fontWeight: '500',
+            }}>
               {item.description}
             </Text>
 
             {/* Image Display */}
             {item.image_url && (
-              <View style={{ marginBottom: 16 }}>
+              <View style={{ marginBottom: 20 }}>
                 <Image 
                   source={{ uri: item.image_url }} 
                   style={{ 
                     width: '100%', 
-                    height: 200, 
-                    borderRadius: 12,
+                    height: 220, 
+                    borderRadius: 16,
                     backgroundColor: '#f8f9fa',
                   }}
                   resizeMode="cover"
@@ -340,20 +429,26 @@ export default function PersonalizedFeedScreen() {
             )}
             
             {item.tags && item.tags.length > 0 && (
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 }}>
                 {item.tags.map((tag, index) => (
                   <View key={index} style={{
-                    backgroundColor: selectedTags.includes(tag) ? '#FF4500' : '#FFF3E0',
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 12,
+                    backgroundColor: selectedTags.includes(tag) ? '#FFD93D' : '#FFF8E1',
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 16,
                     marginRight: 8,
-                    marginBottom: 4,
+                    marginBottom: 8,
+                    elevation: 2,
+                    shadowColor: selectedTags.includes(tag) ? '#FFD93D' : '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: selectedTags.includes(tag) ? 0.3 : 0.1,
+                    shadowRadius: 2,
                   }}>
                     <Text style={{ 
-                      color: selectedTags.includes(tag) ? '#fff' : '#FF4500', 
-                      fontSize: 12, 
-                      fontWeight: '500' 
+                      color: selectedTags.includes(tag) ? '#fff' : '#FF8F00', 
+                      fontSize: 13, 
+                      fontWeight: '600',
+                      letterSpacing: 0.5,
                     }}>
                       #{tag}
                     </Text>
@@ -362,49 +457,87 @@ export default function PersonalizedFeedScreen() {
               </View>
             )}
             
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ 
+              flexDirection: 'row', 
+              justifyContent: 'space-between', 
+              alignItems: 'center' 
+            }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: '#FF4500',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: '#4ECDC4',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginRight: 8,
+                  marginRight: 12,
+                  elevation: 3,
+                  shadowColor: '#4ECDC4',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 3,
                 }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 14 }}>
                     {getInitials(item.users?.full_name || item.users?.email || 'Anonymous')}
                   </Text>
                 </View>
-                <Text style={{ color: '#6c757d', fontSize: 14, fontWeight: '500' }}>
+                <Text style={{ 
+                  color: '#6c757d', 
+                  fontSize: 15, 
+                  fontWeight: '600',
+                  letterSpacing: 0.5,
+                }}>
                   {item.users?.full_name || item.users?.email || 'Anonymous'}
                 </Text>
               </View>
-              <Text style={{ color: '#adb5bd', fontSize: 12 }}>
+              <Text style={{ 
+                color: '#adb5bd', 
+                fontSize: 13, 
+                fontWeight: '500',
+                letterSpacing: 0.5,
+              }}>
                 {formatTimeAgo(item.created_at)}
               </Text>
             </View>
-          </View>
+          </Animated.View>
         )}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }}>
-            <View style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              backgroundColor: '#FFF3E0',
+            <Animated.View style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: '#FFF8E1',
               justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: 24,
+              marginBottom: 32,
+              elevation: 6,
+              shadowColor: '#FFD93D',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              opacity: fadeAnim,
             }}>
-              <Text style={{ fontSize: 32, color: '#FF4500' }}>⭐</Text>
-            </View>
-            <Text style={{ fontSize: 18, color: '#1a1a1a', fontWeight: '600', marginBottom: 8 }}>
+              <Text style={{ fontSize: 40, color: '#FFD93D' }}>⭐</Text>
+            </Animated.View>
+            <Text style={{ 
+              fontSize: 20, 
+              color: '#1a1a1a', 
+              fontWeight: '700', 
+              marginBottom: 12,
+              textAlign: 'center',
+              letterSpacing: 0.5,
+            }}>
               No personalized posts found
             </Text>
-            <Text style={{ fontSize: 14, color: '#6c757d', textAlign: 'center', lineHeight: 20 }}>
+            <Text style={{ 
+              fontSize: 16, 
+              color: '#6c757d', 
+              textAlign: 'center', 
+              lineHeight: 24,
+              maxWidth: 280,
+            }}>
               {userInterests.length === 0 
                 ? 'Add some interests to see personalized posts!' 
                 : 'Try adjusting your tag filters or create some posts with your interests!'}
@@ -412,6 +545,6 @@ export default function PersonalizedFeedScreen() {
           </View>
         }
       />
-    </View>
+    </Animated.View>
   );
 }
