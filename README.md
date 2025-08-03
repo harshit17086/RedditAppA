@@ -12,7 +12,6 @@ If I had to scale this app to 1 million users in India, here are the key changes
 
 • **Performance Optimization**: Implement virtual scrolling for feeds, lazy loading images with WebP format, and reduce bundle size by 60% through code splitting and tree shaking to handle slower 3G connections
 
-• **Monetization Strategy**: Integrate UPI payments for premium features, implement regional ad networks, and create tiered subscription models optimized for Indian purchasing power and usage patterns
 
 
 
